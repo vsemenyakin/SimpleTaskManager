@@ -39,37 +39,55 @@ int main()
     TaskManager::Get().Run(TestIOSimulation1).Next(
         [&TestIOSimulation2](const std::string& Result1)
         {
-            std::cout << Result1 << std::endl;
+            std::cout << "Result1: " << Result1 << std::endl;
+        });
+
+    TaskManager::Get().Run(TestIOSimulation2).Next(
+        [](const std::string& Result2)
+        {
+            std::cout << "Result2: " << Result2 << std::endl;
+        });
+
+    TaskManager::Get().Run(TestIOSimulation2).Next(
+        [](const std::string& Result3)
+        {
+            std::cout << "Result3: " << Result3 << std::endl;
+        });
+
+    TaskManager::Get().Run(TestIOSimulation1).Next(
+        [&TestIOSimulation2](const std::string& Result1)
+        {
+            std::cout << "Result4: " << Result1 << std::endl;
         
             TaskManager::Get().Run(TestIOSimulation2).Next(
                 [](const std::string& Result2)
                 {
-                    std::cout << Result2 << std::endl;
+                    std::cout << "Result5: "  << Result2 << std::endl;
                 });
         });
-    
+
     // ===================== Chaining example =================================    
     // ========================================================================    
     
     //Test update
     using namespace std::chrono_literals;
     
-    std::chrono::steady_clock::duration TimeToWork = 5s;
+    std::chrono::steady_clock::duration TimeToWork = 10s;
     std::chrono::steady_clock::duration PassedTime = 0s;
     
     while (PassedTime <= TimeToWork)
     {
        std::chrono::steady_clock::time_point updateBeginTime = std::chrono::steady_clock::now();
 
-       std::this_thread::sleep_for(200ms); //Simulate time for UI update
+       std::this_thread::sleep_for(200ms); //Simulate time for main loop update
 
        PassedTime += std::chrono::steady_clock::now() - updateBeginTime;
 
-       std::cout << "UI updated: " <<
+       std::cout << "Main loop updated: " <<
           std::chrono::duration_cast<std::chrono::milliseconds>(PassedTime).count() <<
           std::endl;
 
-       TaskManager::Get().ProcessFinishedTasksForCurrentThread();
+       TaskManager::Get().ProcessFinishedTasks();
     }
     
     return 0;

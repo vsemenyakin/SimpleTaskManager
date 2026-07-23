@@ -10,6 +10,7 @@ target_sources(SimpleTaskManager
         main.cpp
 		TasksManager.h
 		TasksManager.inl
+		TasksManager_Details.h
 		utils/Future.h
 		utils/Future.inl
 )
