@@ -40,6 +40,20 @@ int main()
         [&TestIOSimulation2](const std::string& Result1)
         {
             std::cout << Result1 << std::endl;
+        });
+
+    TaskManager::Get().Run(TestIOSimulation2).Next(
+        [](const std::string& Result2)
+        {
+            std::cout << Result2 << std::endl;
+        });
+
+
+#if 0
+    TaskManager::Get().Run(TestIOSimulation1).Next(
+        [&TestIOSimulation2](const std::string& Result1)
+        {
+            std::cout << Result1 << std::endl;
         
             TaskManager::Get().Run(TestIOSimulation2).Next(
                 [](const std::string& Result2)
@@ -47,7 +61,8 @@ int main()
                     std::cout << Result2 << std::endl;
                 });
         });
-    
+#endif
+
     // ===================== Chaining example =================================    
     // ========================================================================    
     
@@ -65,11 +80,11 @@ int main()
 
        PassedTime += std::chrono::steady_clock::now() - updateBeginTime;
 
-       std::cout << "UI updated: " <<
+       std::cout << "Main loop updated: " <<
           std::chrono::duration_cast<std::chrono::milliseconds>(PassedTime).count() <<
           std::endl;
 
-       TaskManager::Get().ProcessFinishedTasksForCurrentThread();
+       TaskManager::Get().ProcessFinishedTasks();
     }
     
     return 0;

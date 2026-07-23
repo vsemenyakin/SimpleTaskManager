@@ -7,11 +7,12 @@
 
 #include "utils/Future.h"
 
-namespace TaskManagerImpl{ class ITask; }
+#include "TasksManager_Details.h"
 
 class TaskManager
 {
 public:
+    constexpr static size_t MaxThreads = 4;
 
     static TaskManager& TaskManager::Get()
     {
@@ -19,29 +20,21 @@ public:
         return Instance;
     }
    
-   template<typename FuncType, typename ... ArgTypes>
-   auto Run(FuncType&& Func, ArgTypes&& ... Args)->
-      Future<decltype(Func(Args ...))>;
-
-   void ProcessFinishedTasksForCurrentThread();
-
+    //Should be called from main thread only
+    //Returned future is always filled from main thread
+    template<typename FuncType, typename ... ArgTypes>
+    auto Run(FuncType&& Func, ArgTypes&& ... Args)->
+       Future<decltype(Func(Args ...))>;
+    
+    //Should be called from main thread
+    void ProcessFinishedTasks();
+    
 private:
+    std::shared_ptr<TaskManagerImpl::Thread> FindOrCreateTheFreestThread();
 
-   ~TaskManager();
-
-   void StartTasksThreadIfNeeded();
-   void StartTasksLoop();
-
-   void ProcessTasks();
-
-   std::unique_ptr<std::thread> TasksThread;
-   std::atomic<bool> IsTasksThreadTerminated;
-
-   std::vector<std::shared_ptr<TaskManagerImpl::ITask>> FinishedTasks;
-   std::mutex FinishedTasksMutex;
+    ~TaskManager();
    
-   std::queue<std::shared_ptr<TaskManagerImpl::ITask>> TasksQueue;
-   std::mutex TasksQueueMutex;
+    std::vector<std::shared_ptr<TaskManagerImpl::Thread>> Threads;
 };
 
 #include "TasksManager.inl"
