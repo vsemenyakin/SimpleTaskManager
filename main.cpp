@@ -15,6 +15,8 @@ int main()
 
         std::this_thread::sleep_for(Timeout);
 
+        std::cout << "Result1 task finished" << std::endl;
+
         std::ostringstream sstream;
         sstream << "Loaded content 1 (after " << Timeout.count() << "s)";
         return std::string{ sstream.str() };
@@ -27,6 +29,8 @@ int main()
         constexpr auto Timeout = 2s;
 
         std::this_thread::sleep_for(Timeout);
+
+        std::cout << "Result2 task finished" << std::endl;
 
         std::ostringstream sstream;
         sstream << "Loaded content 2 (after " << Timeout.count() << "s)";
@@ -42,12 +46,17 @@ int main()
             std::cout << "Result1: " << Result1 << std::endl;
         });
 
+    {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(3s);
+    }
+
     TaskManager::Get().Run(TestIOSimulation2).Next(
         [](const std::string& Result2)
         {
             std::cout << "Result2: " << Result2 << std::endl;
         });
-
+    /*
     TaskManager::Get().Run(TestIOSimulation2).Next(
         [](const std::string& Result3)
         {
@@ -65,6 +74,7 @@ int main()
                     std::cout << "Result5: "  << Result2 << std::endl;
                 });
         });
+     */
 
     // ===================== Chaining example =================================    
     // ========================================================================    
