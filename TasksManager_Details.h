@@ -4,6 +4,7 @@
 #include <mutex>
 #include <atomic>
 #include <queue>
+#include <condition_variable>
 
 #include "utils/Future.h"
 
@@ -59,6 +60,8 @@ namespace TaskManagerImpl
 		{
 			if (Thread)
 			{
+				//Try wake up thread
+				WorkingConditionVariable.notify_one();
 				return;
 			}
 
@@ -131,6 +134,14 @@ namespace TaskManagerImpl
 					FinishedTasks.push_back(CurrentTask);
 				}
 			}
+
+			{
+				std::unique_lock<std::mutex> Guard(TasksQueueMutex);
+				WorkingConditionVariable.wait(Guard, [this]()
+					{
+						return this->TasksQueue.size() > 0;
+					});
+			}
 		}
 
 		std::unique_ptr<std::thread> Thread;
@@ -141,5 +152,7 @@ namespace TaskManagerImpl
 
 		std::vector<std::shared_ptr<ITask>> FinishedTasks;
 		std::mutex FinishedTasksMutex;
+
+		std::condition_variable WorkingConditionVariable;
 	};
 }
